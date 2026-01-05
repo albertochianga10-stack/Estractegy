@@ -27,7 +27,6 @@ const App: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
-  // Inicialização com dados do localStorage ou padrões
   const [budgets, setBudgets] = useState<BudgetEntry[]>(() => {
     const saved = localStorage.getItem('applemar_budgets');
     return saved ? JSON.parse(saved) : INITIAL_BUDGETS;
@@ -38,7 +37,6 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_INVESTMENTS;
   });
 
-  // Efeito para persistir dados sempre que mudarem
   useEffect(() => {
     localStorage.setItem('applemar_budgets', JSON.stringify(budgets));
   }, [budgets]);
@@ -51,16 +49,46 @@ const App: React.FC = () => {
     setBudgets([entry, ...budgets]);
   };
 
+  const handleUpdateBudget = (updated: BudgetEntry) => {
+    setBudgets(budgets.map(b => b.id === updated.id ? updated : b));
+  };
+
   const handleRemoveBudget = (id: string) => {
     setBudgets(budgets.filter(b => b.id !== id));
+  };
+
+  const handleAddInvestment = (entry: Investment) => {
+    setInvestments([entry, ...investments]);
+  };
+
+  const handleUpdateInvestment = (updated: Investment) => {
+    setInvestments(investments.map(i => i.id === updated.id ? updated : i));
+  };
+
+  const handleRemoveInvestment = (id: string) => {
+    setInvestments(investments.filter(i => i.id !== id));
   };
 
   const renderView = () => {
     switch (activeView) {
       case 'dashboard': return <Dashboard budgets={budgets} investments={investments} />;
-      case 'planning': return <Planning budgets={budgets} onAddBudget={handleAddBudget} onRemoveBudget={handleRemoveBudget} />;
+      case 'planning': return (
+        <Planning 
+          budgets={budgets} 
+          onAddBudget={handleAddBudget} 
+          onUpdateBudget={handleUpdateBudget}
+          onRemoveBudget={handleRemoveBudget} 
+        />
+      );
       case 'risk': return <RiskAnalysisPanel budgets={budgets} investments={investments} />;
-      case 'investments': return <InvestmentsPanel investments={investments} />;
+      case 'investments': return (
+        <InvestmentsPanel 
+          investments={investments} 
+          onAddInvestment={handleAddInvestment}
+          onUpdateInvestment={handleUpdateInvestment}
+          onRemoveInvestment={handleRemoveInvestment}
+        />
+      );
       case 'erp': return (
         <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100 text-center space-y-4">
           <Database size={64} className="mx-auto text-blue-500" />
